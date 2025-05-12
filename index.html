@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipper Tire Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .sidebar {
+            background-color: #343a40;
+            color: white;
+            min-height: 100vh;
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 5px;
+        }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            color: white;
+            background-color: #495057;
+        }
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .tire-position {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        .tire-critical {
+            border-left: 5px solid #dc3545;
+        }
+        .tire-warning {
+            border-left: 5px solid #ffc107;
+        }
+        .tire-good {
+            border-left: 5px solid #28a745;
+        }
+        .tire-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .truck-visual {
+            background-color: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .truck-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .truck-tire {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            border: 2px solid #adb5bd;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .truck-tire:hover {
+            transform: scale(1.05);
+        }
+        .truck-tire.critical {
+            background-color: #ff6b6b;
+            color: white;
+        }
+        .truck-tire.warning {
+            background-color: #ffd166;
+        }
+        .truck-tire.good {
+            background-color: #06d6a0;
+            color: white;
+        }
+        .truck-cabin {
+            width: 100px;
+            height: 60px;
+            background-color: #343a40;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 15px;
+        }
+        .progress-thin {
+            height: 8px;
+        }
+        .tire-detail-image {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 5px;
+        }
+        .nav-tabs .nav-link.active {
+            font-weight: bold;
+            border-bottom: 3px solid #0d6efd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block sidebar collapse bg-dark">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">🚛 Tire Management</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="dashboard-tab">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="management-tab">
+                                <i class="bi bi-tools"></i> Tire Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="install-tab">
+                                <i class="bi bi-plus-circle"></i> Install New Tires
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="info-tab">
+                                <i class="bi bi-info-circle"></i> Tipper Info
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="reports-tab">
+                                <i class="bi bi-graph-up"></i> Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Tipper Tire Management System</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-download"></i> Export
+                            </button>
+                        </div>
+                        <div id="current-date" class="text-muted"></div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Tab -->
+                <div id="dashboard-content">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h3>Tire Dashboard</h3>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="dashboard-tipper-select">
+                                <option value="TIPPER-1">TIPPER-1 - AP39UQ-0095</option>
+                                <option value="TIPPER-2">TIPPER-2 - AP39UQ-0097</option>
+                                <option value="TIPPER-3">TIPPER-3 - AP39UQ-0051</option>
+                                <option value="TIPPER-4">TIPPER-4 - AP39UQ-0052</option>
+                                <option value="TIPPER-5">TIPPER-5 - AP39UQ-0080</option>
+                                <option value="TIPPER-6">TIPPER-6 - AP39UQ-0081</option>
+                                <option value="TIPPER-7">TIPPER-7 - AP39UQ-0026</option>
+                                <option value="TIPPER-8">TIPPER-8 - AP39UQ-0027</option>
+                                <option value="TIPPER-9">TIPPER-9 - AP39UQ-0028</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-white bg-primary mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Average Condition</h5>
+                                            <h2 class="card-text">78%</h2>
+                                        </div>
+                                        <i class="bi bi-speedometer2" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-success mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Total KMs Run</h5>
+                                            <h2 class="card-text">24,567 km</h2>
+                                        </div>
+                                        <i class="bi bi-activity" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card text-white bg-danger mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="card-title">Worst Condition</h5>
+                                            <h2 class="card-text">32% (Rear Left 2)</h2>
+                                        </div>
+                                        <i class="bi bi-exclamation-triangle" style="font-size: 3rem; opacity: 0.3;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Truck Visualization -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Tire Positions Visualization</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="truck-visual text-center">
+                                <div class="truck-cabin mx-auto"></div>
+                                <div class="truck-row">
+                                    <div class="truck-tire good" data-position="Front Left">
+                                        FL<br>85%
+                                    </div>
+                                    <div class="truck-tire good" data-position="Front Right">
+                                        FR<br>82%
+                                    </div>
+                                </div>
+                                <div class="truck-row">
+                                    <div class="truck-tire good" data-position="Middle Left 1">
+                                        ML1<br>78%
+                                    </div>
+                                    <div class="truck-tire good" data-position="Middle Right 1">
+                                        MR1<br>75%
+                                    </div>
+                                </div>
+                                <div class="truck-row">
+                                    <div class="truck-tire warning" data-position="Middle Left 2">
+                                        ML2<br>65%
+                                    </div>
+                                    <div class="truck-tire warning" data-position="Middle Right 2">
+                                        MR2<br>62%
+                                    </div>
+                                </div>
+                                <div class="truck-row">
+                                    <div class="truck-tire warning" data-position="Rear Left 1">
+                                        RL1<br>58%
+                                    </div>
+                                    <div class="truck-tire warning" data-position="Rear Right 1">
+                                        RR1<br>55%
+                                    </div>
+                                </div>
+                                <div class="truck-row">
+                                    <div class="truck-tire critical" data-position="Rear Left 2">
+                                        RL2<br>32%
+                                    </div>
+                                    <div class="truck-tire critical" data-position="Rear Right 2">
+                                        RR2<br>45%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Tire Information -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Detailed Tire Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Position</th>
+                                            <th>Tire Number</th>
+                                            <th>Start KMR</th>
+                                            <th>Current KMR</th>
+                                            <th>KMs Run</th>
+                                            <th>Condition</th>
+                                            <th>Date Installed</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Front Left</td>
+                                            <td>Tire-1</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 85%"></div>
+                                                </div>
+                                                85%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Front Right</td>
+                                            <td>Tire-2</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 82%"></div>
+                                                </div>
+                                                82%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Middle Left 1</td>
+                                            <td>Tire-3</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 78%"></div>
+                                                </div>
+                                                78%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Middle Right 1</td>
+                                            <td>Tire-4</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 75%"></div>
+                                                </div>
+                                                75%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Middle Left 2</td>
+                                            <td>Tire-5</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                                </div>
+                                                65%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Middle Right 2</td>
+                                            <td>Tire-6</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 62%"></div>
+                                                </div>
+                                                62%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rear Left 1</td>
+                                            <td>Tire-7</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 58%"></div>
+                                                </div>
+                                                58%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rear Right 1</td>
+                                            <td>Tire-8</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 55%"></div>
+                                                </div>
+                                                55%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary">View</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rear Left 2</td>
+                                            <td>Tire-9</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-danger" style="width: 32%"></div>
+                                                </div>
+                                                32%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger">Replace</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Rear Right 2</td>
+                                            <td>Tire-10</td>
+                                            <td>0</td>
+                                            <td>24,567</td>
+                                            <td>24,567</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-danger" style="width: 45%"></div>
+                                                </div>
+                                                45%
+                                            </td>
+                                            <td>2023-01-15</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-warning">Monitor</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title">Condition Overview</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="conditionChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-header">
+                                    <h5 class="card-title">KMs Run Distribution</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="kmrChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Critical Tires Alert -->
+                    <div class="alert alert-danger">
+                        <h5><i class="bi bi-exclamation-triangle-fill"></i> Tires Needing Attention</h5>
+                        <p>The following tires have condition below 50% and may need replacement soon:</p>
+                        <ul>
+                            <li>Rear Left 2 (Tire-9) - 32% condition</li>
+                            <li>Rear Right 2 (Tire-10) - 45% condition</li>
+                            <li>Rear Left 1 (Tire-7) - 58% condition</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Management Tab -->
+                <div id="management-content" style="display: none;">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h3>Tire Management</h3>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="management-tipper-select">
+                                <option value="TIPPER-1">TIPPER-1 - AP39UQ-0095</option>
+                                <option value="TIPPER-2">TIPPER-2 - AP39UQ-0097</option>
+                                <option value="TIPPER-3">TIPPER-3 - AP39UQ-0051</option>
+                                <option value="TIPPER-4">TIPPER-4 - AP39UQ-0052</option>
+                                <option value="TIPPER-5">TIPPER-5 - AP39UQ-0080</option>
+                                <option value="TIPPER-6">TIPPER-6 - AP39UQ-0081</option>
+                                <option value="TIPPER-7">TIPPER-7 - AP39UQ-0026</option>
+                                <option value="TIPPER-8">TIPPER-8 - AP39UQ-0027</option>
+                                <option value="TIPPER-9">TIPPER-9 - AP39UQ-0028</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <form id="tire-management-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="tire-position">
+                                    <h5>Front Left</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-1" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="front-left-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="85" id="front-left-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Middle Left 1</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-3" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="middle-left-1-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="78" id="middle-left-1-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Middle Left 2</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-5" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="middle-left-2-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="65" id="middle-left-2-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Rear Left 1</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-7" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="rear-left-1-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="58" id="rear-left-1-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Rear Left 2</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-9" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="rear-left-2-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="32" id="rear-left-2-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="tire-position">
+                                    <h5>Front Right</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-2" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="front-right-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="82" id="front-right-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Middle Right 1</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-4" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="middle-right-1-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="75" id="middle-right-1-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Middle Right 2</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-6" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="middle-right-2-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="62" id="middle-right-2-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Rear Right 1</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-8" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="rear-right-1-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="55" id="rear-right-1-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tire-position">
+                                    <h5>Rear Right 2</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Tire Number</label>
+                                        <input type="text" class="form-control" value="Tire-10" readonly>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload Tire Image</label>
+                                        <input class="form-control" type="file" id="rear-right-2-image">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Condition</label>
+                                        <input type="range" class="form-range" min="0" max="100" value="45" id="rear-right-2-condition">
+                                        <div class="d-flex justify-content-between">
+                                            <small>0%</small>
+                                            <small>50%</small>
+                                            <small>100%</small>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Date Installed</label>
+                                        <input type="date" class="form-control" value="2023-01-15">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Starting KMR</label>
+                                                <input type="number" class="form-control" value="0">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Current KMR</label>
+                                                <input type="number" class="form-control" value="24567">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-save"></i> Save All Tire Data
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Install New Tires Tab -->
+                <div id="install-content" style="display: none;">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h3>Install New Tires</h3>
+                        </div>
+                        <div class="col-md-6">
+                            <select class="form-select" id="install-tipper-select">
+                                <option value="TIPPER-1">TIPPER-1 - AP39UQ-0095</option>
+                                <option value="TIPPER-2">TIPPER-2 - AP39UQ-0097</option>
+                                <option value="TIPPER-3">TIPPER-3 - AP39UQ-0051</option>
+                                <option value="TIPPER-4">TIPPER-4 - AP39UQ-0052</option>
+                                <option value="TIPPER-5">TIPPER-5 - AP39UQ-0080</option>
+                                <option value="TIPPER-6">TIPPER-6 - AP39UQ-0081</option>
+                                <option value="TIPPER-7">TIPPER-7 - AP39UQ-0026</option>
+                                <option value="TIPPER-8">TIPPER-8 - AP39UQ-0027</option>
+                                <option value="TIPPER-9">TIPPER-9 - AP39UQ-0028</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <form id="install-tire-form">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="card-title">Tire Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tire Number</label>
+                                            <input type="text" class="form-control" id="new-tire-number" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Position</label>
+                                            <select class="form-select" id="new-tire-position" required>
+                                                <option value="">Select Position</option>
+                                                <option value="Front Left">Front Left</option>
+                                                <option value="Front Right">Front Right</option>
+                                                <option value="Middle Left 1">Middle Left 1</option>
+                                                <option value="Middle Right 1">Middle Right 1</option>
+                                                <option value="Middle Left 2">Middle Left 2</option>
+                                                <option value="Middle Right 2">Middle Right 2</option>
+                                                <option value="Rear Left 1">Rear Left 1</option>
+                                                <option value="Rear Right 1">Rear Right 1</option>
+                                                <option value="Rear Left 2">Rear Left 2</option>
+                                                <option value="Rear Right 2">Rear Right 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Tire Image</label>
+                                            <input class="form-control" type="file" id="new-tire-image">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Date Installed</label>
+                                            <input type="date" class="form-control" id="new-tire-date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Starting KMR</label>
+                                            <input type="number" class="form-control" id="new-tire-start-kmr" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Current KMR</label>
+                                            <input type="number" class="form-control" id="new-tire-current-kmr" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Initial Condition</label>
+                                    <input type="range" class="form-range" min="0" max="100" value="100" id="new-tire-condition">
+                                    <div class="d-flex justify-content-between">
+                                        <small>0%</small>
+                                        <small>50%</small>
+                                        <small>100%</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <textarea class="form-control" id="new-tire-notes" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle"></i> Install New Tire
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Tipper Info Tab -->
+                <div id="info-content" style="display: none;">
+                    <h3>Tipper Information</h3>
+                    
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title">Tipper Details</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tipper ID</th>
+                                            <th>Registration</th>
+                                            <th>Tire Count</th>
+                                            <th>Avg Condition</th>
+                                            <th>Total KMs Run</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>TIPPER-1</td>
+                                            <td>AP39UQ-0095</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 78%"></div>
+                                                </div>
+                                                78%
+                                            </td>
+                                            <td>24,567 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-2</td>
+                                            <td>AP39UQ-0097</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 82%"></div>
+                                                </div>
+                                                82%
+                                            </td>
+                                            <td>18,923 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-3</td>
+                                            <td>AP39UQ-0051</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 65%"></div>
+                                                </div>
+                                                65%
+                                            </td>
+                                            <td>32,145 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-4</td>
+                                            <td>AP39UQ-0052</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 75%"></div>
+                                                </div>
+                                                75%
+                                            </td>
+                                            <td>21,876 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-5</td>
+                                            <td>AP39UQ-0080</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 58%"></div>
+                                                </div>
+                                                58%
+                                            </td>
+                                            <td>36,789 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-6</td>
+                                            <td>AP39UQ-0081</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-danger" style="width: 42%"></div>
+                                                </div>
+                                                42%
+                                            </td>
+                                            <td>45,231 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-7</td>
+                                            <td>AP39UQ-0026</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 85%"></div>
+                                                </div>
+                                                85%
+                                            </td>
+                                            <td>12,345 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-8</td>
+                                            <td>AP39UQ-0027</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-success" style="width: 72%"></div>
+                                                </div>
+                                                72%
+                                            </td>
+                                            <td>28,654 km</td>
+                                        </tr>
+                                        <tr>
+                                            <td>TIPPER-9</td>
+                                            <td>AP39UQ-0028</td>
+                                            <td>10</td>
+                                            <td>
+                                                <div class="progress progress-thin">
+                                                    <div class="progress-bar bg-warning" style="width: 62%"></div>
+                                                </div>
+                                                62%
+                                            </td>
+                                            <td>34,567 km</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Tipper Statistics</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <canvas id="tipperConditionChart" height="300"></canvas>
+                                </div>
+                                <div class="col-md-6">
+                                    <canvas id="tipperKmrChart" height="300"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reports-content" style="display: none;">
+                    <h3>Tire Reports</h3>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Generate Report</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="report-form">
+                                        <div class="mb-3">
+                                            <label class="form-label">Report Type</label>
+                                            <select class="form-select" id="report-type">
+                                                <option value="condition">Tire Condition Report</option>
+                                                <option value="kmr">KMs Run Report</option>
+                                                <option value="replacement">Replacement Needed Report</option>
+                                                <option value="maintenance">Maintenance History</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tipper</label>
+                                            <select class="form-select" id="report-tipper">
+                                                <option value="all">All Tippers</option>
+                                                <option value="TIPPER-1">TIPPER-1 - AP39UQ-0095</option>
+                                                <option value="TIPPER-2">TIPPER-2 - AP39UQ-0097</option>
+                                                <option value="TIPPER-3">TIPPER-3 - AP39UQ-0051</option>
+                                                <option value="TIPPER-4">TIPPER-4 - AP39UQ-0052</option>
+                                                <option value="TIPPER-5">TIPPER-5 - AP39UQ-0080</option>
+                                                <option value="TIPPER-6">TIPPER-6 - AP39UQ-0081</option>
+                                                <option value="TIPPER-7">TIPPER-7 - AP39UQ-0026</option>
+                                                <option value="TIPPER-8">TIPPER-8 - AP39UQ-0027</option>
+                                                <option value="TIPPER-9">TIPPER-9 - AP39UQ-0028</option>
+                                            </select>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">From Date</label>
+                                                    <input type="date" class="form-control" id="report-from-date">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">To Date</label>
+                                                    <input type="date" class="form-control" id="report-to-date">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Format</label>
+                                            <div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="report-format" id="pdf-format" value="pdf" checked>
+                                                    <label class="form-check-label" for="pdf-format">PDF</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="report-format" id="excel-format" value="excel">
+                                                    <label class="form-check-label" for="excel-format">Excel</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="report-format" id="csv-format" value="csv">
+                                                    <label class="form-check-label" for="csv-format">CSV</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-file-earmark-text"></i> Generate Report
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Recent Reports</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="list-group">
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Tire Condition Report - All Tippers</h6>
+                                                <small>3 days ago</small>
+                                            </div>
+                                            <p class="mb-1">PDF format, generated on 2023-06-15</p>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Replacement Needed - TIPPER-6</h6>
+                                                <small>1 week ago</small>
+                                            </div>
+                                            <p class="mb-1">Excel format, generated on 2023-06-09</p>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">KMs Run Analysis - Last Quarter</h6>
+                                                <small>2 weeks ago</small>
+                                            </div>
+                                            <p class="mb-1">PDF format, generated on 2023-06-02</p>
+                                        </a>
+                                        <a href="#" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Maintenance History - TIPPER-3</h6>
+                                                <small>3 weeks ago</small>
+                                            </div>
+                                            <p class="mb-1">CSV format, generated on 2023-05-26</p>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">Tire Replacement Forecast</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="forecastChart" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Tire Details -->
+    <div class="modal fade" id="tireDetailModal" tabindex="-1" aria-labelledby="tireDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tireDetailModalLabel">Tire Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6>Front Left - Tire-1</h6>
+                                <p class="text-muted">TIPPER-1 - AP39UQ-0095</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Condition</label>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%;" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Start KMR</label>
+                                        <input type="text" class="form-control" value="0" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Current KMR</label>
+                                        <input type="text" class="form-control" value="24,567" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">KMs Run</label>
+                                <input type="text" class="form-control" value="24,567" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Date Installed</label>
+                                <input type="text" class="form-control" value="2023-01-15" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Last Checked</label>
+                                <input type="text" class="form-control" value="2023-06-18 14:30" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Tire Images</h6>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <img src="https://via.placeholder.com/300" class="tire-detail-image" alt="Tire Image 1">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <img src="https://via.placeholder.com/300" class="tire-detail-image" alt="Tire Image 2">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" rows="3" readonly>This tire is in good condition with normal wear patterns. No visible damage or irregular wear.</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary">Edit Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Set current date
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('en-US', { 
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+        });
+
+        // Tab switching
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Update active tab in sidebar
+                document.querySelectorAll('.sidebar .nav-link').forEach(navLink => {
+                    navLink.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Hide all content divs
+                document.querySelectorAll('#dashboard-content, #management-content, #install-content, #info-content, #reports-content').forEach(div => {
+                    div.style.display = 'none';
+                });
+                
+                // Show the selected content
+                const target = this.id.replace('-tab', '-content');
+                document.getElementById(target).style.display = 'block';
+            });
+        });
+
+        // Initialize charts when the dashboard is shown
+        document.getElementById('dashboard-tab').addEventListener('click', function() {
+            initCharts();
+        });
+
+        // Initialize charts when the info tab is shown
+        document.getElementById('info-tab').addEventListener('click', function() {
+            initTipperCharts();
+        });
+
+        // Initialize charts when the reports tab is shown
+        document.getElementById('reports-tab').addEventListener('click', function() {
+            initForecastChart();
+        });
+
+        // Show tire details when a tire in the truck visualization is clicked
+        document.querySelectorAll('.truck-tire').forEach(tire => {
+            tire.addEventListener('click', function() {
+                const modal = new bootstrap.Modal(document.getElementById('tireDetailModal'));
+                modal.show();
+            });
+        });
+
+        // Form submission handlers
+        document.getElementById('tire-management-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Tire data saved successfully!');
+        });
+
+        document.getElementById('install-tire-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('New tire installed successfully!');
+            this.reset();
+        });
+
+        document.getElementById('report-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Report generated successfully!');
+        });
+
+        // Initialize charts
+        function initCharts() {
+            // Condition Chart
+            const conditionCtx = document.getElementById('conditionChart').getContext('2d');
+            new Chart(conditionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Front Left', 'Front Right', 'Middle Left 1', 'Middle Right 1', 'Middle Left 2', 'Middle Right 2', 'Rear Left 1', 'Rear Right 1', 'Rear Left 2', 'Rear Right 2'],
+                    datasets: [{
+                        label: 'Condition (%)',
+                        data: [85, 82, 78, 75, 65, 62, 58, 55, 32, 45],
+                        backgroundColor: [
+                            '#28a745', '#28a745', '#28a745', '#28a745', 
+                            '#ffc107', '#ffc107', '#ffc107', '#ffc107', 
+                            '#dc3545', '#dc3545'
+                        ],
+                        borderColor: [
+                            '#218838', '#218838', '#218838', '#218838',
+                            '#e0a800', '#e0a800', '#e0a800', '#e0a800',
+                            '#c82333', '#c82333'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // KMR Chart
+            const kmrCtx = document.getElementById('kmrChart').getContext('2d');
+            new Chart(kmrCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Front Left', 'Front Right', 'Middle Left 1', 'Middle Right 1', 'Middle Left 2', 'Middle Right 2', 'Rear Left 1', 'Rear Right 1', 'Rear Left 2', 'Rear Right 2'],
+                    datasets: [{
+                        data: [24567, 24567, 24567, 24567, 24567, 24567, 24567, 24567, 24567, 24567],
+                        backgroundColor: [
+                            '#007bff', '#6610f2', '#6f42c1', '#e83e8c',
+                            '#fd7e14', '#20c997', '#28a745', '#17a2b8',
+                            '#ffc107', '#dc3545'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.raw.toLocaleString() + ' km';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize tipper charts
+        function initTipperCharts() {
+            // Tipper Condition Chart
+            const tipperConditionCtx = document.getElementById('tipperConditionChart').getContext('2d');
+            new Chart(tipperConditionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['TIPPER-1', 'TIPPER-2', 'TIPPER-3', 'TIPPER-4', 'TIPPER-5', 'TIPPER-6', 'TIPPER-7', 'TIPPER-8', 'TIPPER-9'],
+                    datasets: [{
+                        label: 'Average Condition (%)',
+                        data: [78, 82, 65, 75, 58, 42, 85, 72, 62],
+                        backgroundColor: [
+                            '#28a745', '#28a745', '#ffc107', '#28a745',
+                            '#ffc107', '#dc3545', '#28a745', '#28a745',
+                            '#ffc107'
+                        ],
+                        borderColor: [
+                            '#218838', '#218838', '#e0a800', '#218838',
+                            '#e0a800', '#c82333', '#218838', '#218838',
+                            '#e0a800'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Tipper KMR Chart
+            const tipperKmrCtx = document.getElementById('tipperKmrChart').getContext('2d');
+            new Chart(tipperKmrCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['TIPPER-1', 'TIPPER-2', 'TIPPER-3', 'TIPPER-4', 'TIPPER-5', 'TIPPER-6', 'TIPPER-7', 'TIPPER-8', 'TIPPER-9'],
+                    datasets: [{
+                        label: 'Total KMs Run',
+                        data: [24567, 18923, 32145, 21876, 36789, 45231, 12345, 28654, 34567],
+                        backgroundColor: '#17a2b8',
+                        borderColor: '#138496',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + ' km';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw.toLocaleString() + ' km';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize forecast chart
+        function initForecastChart() {
+            const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+            new Chart(forecastCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'Front Tires',
+                            data: [85, 82, 80, 78, 75, 72, 70, 68, 65, 63, 60, 58],
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Middle Tires',
+                            data: [75, 72, 70, 67, 65, 62, 60, 58, 55, 52, 50, 48],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Rear Tires',
+                            data: [65, 62, 60, 57, 55, 52, 50, 48, 45, 42, 40, 38],
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 30,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Condition (%)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Month'
+                            }
+                        }
+                    },
+                    plugins: {
+                        annotation: {
+                            annotations: {
+                                line1: {
+                                    type: 'line',
+                                    yMin: 50,
+                                    yMax: 50,
+                                    borderColor: 'rgb(255, 193, 7)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: 'Warning Level',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                },
+                                line2: {
+                                    type: 'line',
+                                    yMin: 40,
+                                    yMax: 40,
+                                    borderColor: 'rgb(220, 53, 69)',
+                                    borderWidth: 2,
+                                    borderDash: [6, 6],
+                                    label: {
+                                        content: 'Critical Level',
+                                        enabled: true,
+                                        position: 'right'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize dashboard charts on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+        });
+    </script>
+</body>
+</html>
